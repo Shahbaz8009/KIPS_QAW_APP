@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>KIPS QAW — Demo Version</title>
+<style>
+  :root {
+    --navy: #1F3864;
+    --navy-dark: #13233F;
+    --gold: #C9A227;
+    --light-blue: #EAF1FA;
+    --border: #D7DEE8;
+    --red: #C00000;
+    --red-bg: #FBE2E2;
+    --amber: #B8860B;
+    --amber-bg: #FDECC8;
+    --green: #2E7D32;
+    --green-bg: #DFF3E0;
+    --grey: #666;
+    --text: #1F2937;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #F4F6FA; color: var(--text); }
+  body { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F4F6FA; }
+  #app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ---- App shell / topbar ---- */
+  .app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar {
+    background: var(--navy); color: #fff; display: flex; align-items: center;
+    justify-content: space-between; padding: 14px 10px; position: sticky; top: 0; z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .topbar-title { font-weight: 700; font-size: 17px; flex: 1; text-align: center; }
+  .iconbtn { background: none; border: none; color: #fff; font-size: 20px; width: 32px; cursor: pointer; }
+  .content { padding: 14px 16px 90px 16px; flex: 1; }
+  .bottombar {
+    position: sticky; bottom: 0; display: flex; gap: 10px; padding: 10px 16px;
+    background: #fff; border-top: 1px solid var(--border);
+  }
+
+  /* ---- Login ---- */
+  .login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 60%); }
+  .login-card { background: #fff; border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+ .brand-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 12px auto;
+}
+
+.brand-logo img {
+  width: 100px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+  .brand-badge.small { width: 40px; height: 40px; font-size: 12px; }
+  .login-card h1 { font-size: 20px; margin: 4px 0 0 0; color: var(--navy); }
+  .login-card .subtitle { color: var(--grey); font-size: 13px; margin-bottom: 14px; }
+  .login-card label { display: block; text-align: left; font-size: 12px; font-weight: 700; color: var(--navy); margin: 10px 0 4px; }
+  .login-card input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 15px; }
+  .hint { font-size: 11px; color: var(--grey); margin-top: 10px; }
+  .error { color: var(--red); font-size: 12px; margin-top: 8px; }
+
+  /* ---- Buttons ---- */
+  button.primary, button.secondary { border: none; border-radius: 10px; font-weight: 700; cursor: pointer; padding: 13px 16px; font-size: 15px; width: 100%; }
+  button.primary { background: var(--navy); color: #fff; margin-top: 14px; }
+  button.primary.big { padding: 15px; font-size: 16px; }
+  button.secondary { background: #fff; color: var(--navy); border: 1.5px solid var(--navy); margin-top: 8px; }
+
+  /* ---- Dashboard ---- */
+  .demo-banner { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber); border-radius: 8px; padding: 8px 10px; font-size: 11.5px; font-weight: 700; text-align: center; margin: 10px 0; }
+  .demo-banner.small { margin: 0; padding: 4px 8px; font-size: 10px; }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .dashcard { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px 10px; text-align: center; position: relative; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .dashcard.critical { border-color: var(--red); }
+  .dashcard-icon { font-size: 26px; }
+  .dashcard-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-top: 8px; }
+  .dashcard-badge { position: absolute; top: 8px; right: 10px; background: var(--red); color: #fff; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 1px 7px; }
+
+  /* ---- New inspection form ---- */
+  label { display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin: 12px 0 4px; }
+  select, input[type=text], input[type=date], textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; background: #fff; font-family: inherit;
+  }
+  textarea { resize: vertical; }
+
+  /* ---- Checklist ---- */
+  .insp-meta { font-size: 12px; color: var(--grey); margin-bottom: 10px; }
+  .domain-block { margin-bottom: 14px; }
+  .domain-header { background: var(--light-blue); color: var(--navy); font-weight: 800; font-size: 12.5px; padding: 8px 10px; border-radius: 8px 8px 0 0; }
+  .cp-row { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border); border-top: none; padding: 10px; cursor: pointer; }
+  .domain-block .cp-row:last-child { border-radius: 0 0 8px 8px; }
+  .cp-id { font-weight: 800; font-size: 11.5px; color: var(--navy); width: 46px; flex-shrink: 0; }
+  .cp-standard { flex: 1; font-size: 12.5px; line-height: 1.3; }
+  .cp-rating { width: 22px; height: 22px; border-radius: 50%; background: #EEE; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+  .cp-flag { font-size: 14px; flex-shrink: 0; }
+  .cp-row.critical { background: var(--red-bg); }
+  .cp-row.high { background: var(--amber-bg); }
+  .cp-row.medium { background: #FFF7DC; }
+
+  /* ---- Checkpoint detail ---- */
+  .critical-banner { background: var(--red); color: #fff; font-weight: 800; text-align: center; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+  .cp-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .cp-card-standard { font-size: 14px; font-weight: 600; line-height: 1.4; }
+  .cp-card-meta { font-size: 12px; color: var(--grey); margin-top: 8px; }
+  .rate-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .rate-btn { border: 1.5px solid var(--border); background: #fff; border-radius: 8px; padding: 8px 2px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .rate-btn .rate-label { font-size: 8.5px; font-weight: 500; text-align: center; line-height: 1.1; }
+  .rate-btn.r0.selected { background: var(--red); color: #fff; border-color: var(--red); }
+  .rate-btn.r1.selected { background: var(--red); color: #fff; border-color: var(--red); }
+  .rate-btn.r2.selected { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .rate-btn.r3.selected { background: #C6A700; color: #fff; border-color: #C6A700; }
+  .rate-btn.r4.selected { background: var(--green); color: #fff; border-color: var(--green); }
+  .score-preview { font-size: 13px; margin: 10px 0 4px; color: var(--navy); }
+  .photo-row { display: flex; gap: 8px; margin-top: 4px; }
+  .photobtn { flex: 1; background: var(--navy); color: #fff; text-align: center; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .photobtn.secondary { background: #fff; color: var(--navy); border: 1.5px solid var(--navy); }
+  .thumb-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+  .corrective-block { margin-top: 16px; padding-top: 10px; border-top: 2px dashed var(--border); }
+  .section-title { font-weight: 800; color: var(--navy); font-size: 13px; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .3px; }
+
+  /* ---- Summary ---- */
+  .summary-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 4px 12px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #EEE; font-size: 13.5px; }
+  .summary-row:last-child { border-bottom: none; }
+  .status { padding: 2px 8px; border-radius: 6px; }
+  .status.critical { background: var(--red-bg); color: var(--red); }
+  .status.excellent, .status.good { background: var(--green-bg); color: var(--green); }
+  .status.warn { background: var(--amber-bg); color: var(--amber); }
+  .status.bad { background: var(--red-bg); color: var(--red); }
+  .domain-score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ds-name { width: 40%; font-size: 11.5px; }
+  .ds-bar-track { flex: 1; background: #E5E9F0; height: 8px; border-radius: 4px; overflow: hidden; }
+  .ds-bar-fill { background: var(--navy); height: 100%; }
+  .ds-pct { width: 40px; text-align: right; font-size: 11.5px; font-weight: 700; }
+
+  /* ---- History ---- */
+  .history-row { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .history-campus { font-weight: 700; font-size: 14px; }
+  .history-date { font-size: 11.5px; color: var(--grey); }
+  .history-score { font-weight: 800; color: var(--navy); font-size: 16px; }
+
+  /* ---- Report ---- */
+  .report-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .report-title { font-weight: 800; color: var(--navy); font-size: 15px; }
+  .report-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+  .report-table td { padding: 6px 4px; border-bottom: 1px solid #EEE; font-size: 12.5px; }
+  .report-table td:first-child { color: var(--grey); width: 45%; }
+  .report-obs { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; line-height: 1.4; }
+  .report-obs.critical { background: var(--red-bg); border-color: var(--red); }
+
+  @media print {
+    .topbar, .bottombar, .no-print { display: none !important; }
+    body { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+/* ============================================================
+   KIPS QAW Inspection — DEMO / PROTOTYPE
+   100% offline, vanilla JS, no dependencies, no network calls.
+   All data lives in memory for this session only (no localStorage,
+   by design, so the file is safe to preview anywhere).
+   ============================================================ */
+
+const CAMPUSES = ["LHR BC1 (AMEER CHOWK)", "LHR GC2 (GARDEN TOWN)", "FSD BC2 (D GROUND)", "ISB GC1 (G-9)", "RWP BC1 (6TH ROAD)"];
+
+const RATING_LABELS = {
+  0: "Non-Compliant",
+  1: "Major Gap",
+  2: "Partial Compliance",
+  3: "Minor Gap",
+  4: "Fully Compliant",
+};
+
+// 3-5 representative checkpoints per domain (subset of the full 101-point
+// KIPS QAW checklist — the app is built so the full list can be dropped
+// into DOMAINS below without any other code changes).
+const DOMAINS = [
+  { code: "GOV", name: "Gerenal Compliance", items: [
+    ["GOV01", "Principal vision about its college, college culture, management style and JDs of Staff.", 1.5, false],
+    ["GOV02", "Principal holds regular meetings with HODs/faculty; minutes track action closure.", 1.0, false],
+    ["GOV03", "Current SOS/TRS and Head-Office academic instructions are on file and implemented.", 1.8, true],
+    ["GOV04", "Admission analysis, Result analysis & what actions taken regarding topper and failure.", 1.8, true],
+    ["GOV05", "Corrective actions from the previous QAW inspection are verified closed.", 1.8, true],
+
+  ]},
+  { code: "ACA", name: "Academics", items: [
+    ["ACA01", "Timetable is approved/current; teacher and room allocation match actual classes.", 1.3, false],
+    ["ACA02", "Student attendance is accurate, timely, and absentee follow-up is documented.", 1.6, true],
+    ["ACA03", "Teachers follow the approved KIPS Teaching Methodology.", 1.6, true],
+    ["ACA04", "Test discussion is conducted in the approved format within the prescribed timeline.", 1.3, false],
+    ["ACA05", "Question papers are controlled, scheduled, conducted and returned per plan.", 1.6, true],
+  ]},
+  { code: "CSL", name: "Student Counselling", items: [
+    ["CSL01", "Counselling files are complete, confidential and updated.", 1.1, false],
+    ["CSL02", "PTM is planned, conducted, attendance recorded and outcomes followed up.", 1.3, false],
+    ["CSL03", "Student welfare concerns are identified, escalated and actioned.", 1.6, true],
+  ]},
+  { code: "ADM", name: "Management", items: [
+    ["ADM01", "Inquiry log captures physical/digital/phone inquiries and follow-up status.", 1.0, false],
+    ["ADM02", "Admission forms are complete, controlled and reconciled with ERP.", 1.4, true],
+    ["ADM03", "Staff correctly explain programs, class structure and fee packages.", 1.0, false],
+  ]},
+  { code: "ERP", name: "ERP Compliance", items: [
+    ["ERP01", "Student attendance in ERP is complete, same-day and reconciles with the physical record.", 1.4, true],
+    ["ERP02", "ERP fee recovery matches master sheet/accounts and supporting records.", 1.6, true],
+    ["ERP03", "ERP user accounts and access are appropriate; inactive accounts are disabled.", 1.6, true],
+    ["ERP04", "Sectioning in ERP matches the approved timetable/physical classes.", 1.2, false],
+  ]},
+  { code: "FIN", name: "Accounts", items: [
+    ["FIN01", "Master sheet is updated and reconciles with ERP.", 1.5, true],
+    ["FIN02", "Physical cash agrees with the authorised balance and records.", 1.6, true],
+    ["FIN03", "Daily collection, DCR and bank deposit process is timely and documented.", 1.4, false],
+    ["FIN04", "Stock and sales records reconcile with physical stock.", 1.1, false],
+  ]},
+  { code: "ENV", name: "Cafeteria", items: [
+    ["ENV01", "Washrooms are clean, functional, supplied and maintained.", 1.4, true],
+    ["ENV02", "Filtered/drinking water is available, clean and functional.", 1.4, true],
+    ["ENV03", "Electrical connections, wiring and equipment are safe.", 1.3, true],
+    ["ENV04", "Overall campus cleanliness meets KIPS presentation standards.", 1.0, false],
+  ]},
+  { code: "LAB", name: "Labs & Library", items: [
+    ["LAB01", "Lab safety SOPs, PPE and first-aid/fire arrangements are available.", 1.3, true],
+    ["LAB02", "Lab inventory reconciles with physical stock.", 1.1, false],
+    ["LAB03", "Computer-lab devices, network and required software are functional.", 0.8, false],
+  ]},
+  { code: "SEC", name: "Safety & Security", items: [
+    ["SEC01", "Fire extinguishers are available, accessible, valid and appropriately positioned.", 1.4, true],
+    ["SEC02", "CCTV coverage is functional, monitored and recordings are accessible.", 1.2, true],
+    ["SEC03", "Security guard is present, identifiable and alert.", 1.0, true],
+    ["SEC04", "Visitor entry/exit is recorded and monitored.", 0.9, true],
+  ]},
+  { code: "BRD", name: "Marketing & IT", items: [
+    ["BRD01", "KIPS signage and campus branding follow approved standards.", 0.8, false],
+    ["BRD02", "Mission statement, portraits and table flag are correctly displayed.", 0.9, false],
+    ["BRD03", "Internet connectivity reliably supports academic/ERP operations.", 0.8, false],
+  ]},
+  { code: "HRC", name: "IO Affairs", items: [
+    ["HRC01", "Staff attendance, punctuality and leave records are maintained accurately.", 0.9, false],
+    ["HRC02", "Professional respect is evident between management, faculty and staff.", 1.2, true],
+    ["HRC03", "Approved manpower is in place; shortages have a documented action plan.", 0.8, false],
+  ]},
+];
+
+// Preloaded demo ratings/observations for a plausible pre-filled inspection.
+const DEMO_PRESETS = {
+  ENV02: { rating: 1, observation: "Filtered drinking water unit was not functional during inspection.",
+           action: "Repair/replace filtration unit.", dept: "Admin / Maintenance", target: "2026-08-14", status: "Open" },
+  ACA03: { rating: 4, observation: "Classroom observation showed compliance with approved teaching methodology.", status: "Closed" },
+  ERP03: { rating: 1, observation: "Two inactive user accounts were still active with edit rights.",
+           action: "Disable inactive accounts and review the active-user list.", dept: "IT / ERP", target: "2026-08-11", status: "Open" },
+  SEC01: { rating: 1, observation: "One fire extinguisher had an expired service tag.",
+           action: "Replace/re-service extinguisher; verify tag validity.", dept: "Admin / Security", target: "2026-08-10", status: "Open" },
+};
+// fill remaining checkpoints with plausible ratings so the demo dashboard looks realistic
+const FILLER_RATINGS = [4, 3, 4, 3, 4, 2, 3, 4, 3, 4, 3, 2, 4, 3, 4, 3, 4, 4, 3, 2, 4, 3, 4, 4, 3, 3, 4, 2, 4, 3, 4, 3, 4, 3, 2, 4];
+
+const HISTORY_DEMO = [
+  { campus: "LHR BC1 (AMEER CHOWK)", date: "2026-08-08", score: 82.4, status: "GOOD" },
+  { campus: "LHR GC2 (GARDEN TOWN)", date: "2026-08-01", score: 91.2, status: "EXCELLENT" },
+  { campus: "FSD BC2 (D GROUND)", date: "2026-07-24", score: 78.6, status: "NEEDS IMPROVEMENT" },
+];
+
+/* ---------------------------------------------------------------- state */
+const state = {
+  loggedIn: false,
+  screen: "login",
+  loginError: "",
+  inspection: null,   // { campus, date, principal, team, checkpoints: {id: {...}} }
+  activeCheckpoint: null,
+  activeDomainCode: null,
+};
+
+function initInspectionData() {
+  const checkpoints = {};
+  let fillerIdx = 0;
+  DOMAINS.forEach(dom => {
+    dom.items.forEach(([id, standard, weight, critical]) => {
+      const preset = DEMO_PRESETS[id];
+      const rating = preset ? preset.rating : FILLER_RATINGS[fillerIdx++ % FILLER_RATINGS.length];
+      checkpoints[id] = {
+        id, standard, weight, critical, domain: dom.name,
+        rating: rating,
+        observation: preset ? preset.observation : "",
+        action: preset ? (preset.action || "") : "",
+        dept: preset ? (preset.dept || "") : "",
+        target: preset ? (preset.target || "") : "",
+        closureStatus: preset ? preset.status : (rating >= 3 ? "Closed" : "Open"),
+        closureNote: "",
+        photos: [],       // observation evidence photos (data URLs, in-memory)
+        closurePhotos: [],
+      };
+    });
+  });
+  return checkpoints;
+}
+
+function weightedScore(cp) {
+  if (cp.rating === null || cp.rating === undefined) return 0;
+  return Math.round((cp.weight * cp.rating / 4) * 100) / 100;
+}
+
+function priorityOf(cp) {
+  if (cp.rating === null || cp.rating === undefined) return "";
+  if (cp.critical && cp.rating <= 1) return "CRITICAL";
+  if (cp.rating <= 1) return "HIGH";
+  if (cp.rating === 2) return "MEDIUM";
+  return "LOW";
+}
+
+function computeSummary(insp) {
+  const cps = Object.values(insp.checkpoints);
+  const totalWeight = cps.reduce((s, c) => s + c.weight, 0);
+  const totalScore = cps.reduce((s, c) => s + weightedScore(c), 0);
+  const overall = totalWeight ? Math.round((totalScore / totalWeight) * 1000) / 10 : 0;
+  const critical = cps.filter(c => priorityOf(c) === "CRITICAL").length;
+  const high = cps.filter(c => priorityOf(c) === "HIGH").length;
+  const medium = cps.filter(c => priorityOf(c) === "MEDIUM").length;
+  let status;
+  if (critical > 0) status = "CRITICAL \u2013 ACTION REQUIRED";
+  else if (overall >= 90) status = "EXCELLENT";
+  else if (overall >= 80) status = "GOOD";
+  else if (overall >= 70) status = "NEEDS IMPROVEMENT";
+  else status = "UNSATISFACTORY";
+
+  const domainScores = DOMAINS.map(dom => {
+    const items = dom.items.map(([id]) => insp.checkpoints[id]);
+    const dw = items.reduce((s, c) => s + c.weight, 0);
+    const ds = items.reduce((s, c) => s + weightedScore(c), 0);
+    return { name: dom.name, weight: Math.round(dw * 100) / 100, score: Math.round(ds * 100) / 100,
+             pct: dw ? Math.round((ds / dw) * 1000) / 10 : 0 };
+  });
+
+  return { overall, status, critical, high, medium, totalWeight: Math.round(totalWeight * 100) / 100,
+           totalScore: Math.round(totalScore * 100) / 100, domainScores };
+}
+
+/* ---------------------------------------------------------------- render */
+const root = document.getElementById("app");
+
+function render() {
+  if (!state.loggedIn) return renderLogin();
+  switch (state.screen) {
+    case "dashboard": return renderDashboard();
+    case "newInspection": return renderNewInspection();
+    case "checklist": return renderChecklist();
+    case "checkpoint": return renderCheckpointDetail();
+    case "summary": return renderSummary();
+    case "history": return renderHistory();
+    case "report": return renderReport();
+    default: return renderDashboard();
+  }
+}
+
+function el(html) {
+  const t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+function setScreen(s) { state.screen = s; render(); window.scrollTo(0,0); }
+
+function topBar(title, backScreen) {
+  return `
+    <div class="topbar">
+      ${backScreen ? `<button class="iconbtn" onclick="setScreen('${backScreen}')">\u2190</button>` : `<span class="iconbtn"></span>`}
+      <div class="topbar-title">${title}</div>
+      <span class="iconbtn"></span>
+    </div>`;
+}
+
+/* ---- LOGIN ---- */
+function renderLogin() {
+  root.innerHTML = `
+    <div class="login-screen">
+      <div class="login-card">
+        <div class="brand-logo">
+    <img src="KIPS_logo.png" alt="KIPS Logo"></div>
+        <h1>QAW INSPECTION </h1>
+        <div class="subtitle">College Directorate (QAW)</div>
+        <div class="demo-banner">DEMO Version</div>
+        <label>Username</label>
+        <input id="user" type="text" placeholder="QAW-Team" value="qaw" />
+        <label>Password</label>
+        <input id="pass" type="password" placeholder="1234" value="1234" />
+        ${state.loginError ? `<div class="error">${state.loginError}</div>` : ""}
+        <button class="primary" onclick="doLogin()">Login</button>
+        <div class="hint">Demo login: <b>qaw</b> / <b>1234</b></div>
+      </div>
+    </div>`;
+}
+function doLogin() {
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
+  if (u === "qaw" && p === "1234") {
+    state.loggedIn = true; state.loginError = ""; setScreen("dashboard");
+  } else {
+    state.loginError = "Invalid demo credentials. Use qaw / 1234.";
+    renderLogin();
+  }
+}
+
+/* ---- DASHBOARD ---- */
+function renderDashboard() {
+  const hasInsp = !!state.inspection;
+  let critCount = 0, openCount = 0;
+  if (hasInsp) {
+    const s = computeSummary(state.inspection);
+    critCount = s.critical; openCount = s.critical + s.high;
+  }
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar("QAW INSPECTION")}
+      <div class="content">
+        <div class="demo-banner small">DEMO Version</div>
+        <div class="card-grid">
+          <div class="dashcard" onclick="setScreen('newInspection')">
+            <div class="dashcard-icon">\uD83D\uDCCB</div>
+            <div class="dashcard-title">New Inspection</div>
+          </div>
+          <div class="dashcard" onclick="setScreen('history')">
+            <div class="dashcard-icon">\uD83D\uDCDA</div>
+            <div class="dashcard-title">Inspection History</div>
+          </div>
+          <div class="dashcard" onclick="${hasInsp ? "setScreen('checklist')" : "alert('Start an inspection first.')"}">
+            <div class="dashcard-icon">\uD83D\uDCCC</div>
+            <div class="dashcard-title">Open Observations</div>
+            <div class="dashcard-badge">${hasInsp ? openCount : "\u2013"}</div>
+          </div>
+          <div class="dashcard critical" onclick="${hasInsp ? "setScreen('summary')" : "alert('Start an inspection first.')"}">
+            <div class="dashcard-icon">\uD83D\uDD34</div>
+            <div class="dashcard-title">Critical Issues</div>
+            <div class="dashcard-badge">${hasInsp ? critCount : "\u2013"}</div>
+          </div>
+        </div>
+        <button class="primary big" onclick="setScreen('newInspection')">Start New Inspection</button>
+        ${hasInsp ? `<button class="secondary" onclick="setScreen('checklist')">Resume: ${state.inspection.campus}</button>` : ""}
+      </div>
+    </div>`;
+}
+
+/* ---- NEW INSPECTION ---- */
+function renderNewInspection() {
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar("New Inspection", "dashboard")}
+      <div class="content">
+        <label>Campus</label>
+        <select id="ni-campus">${CAMPUSES.map(c => `<option value="${c}">${c}</option>`).join("")}</select>
+        <label>Inspection Date</label>
+        <input id="ni-date" type="date" value="2026-08-08" />
+        <label>Principal Name</label>
+        <input id="ni-principal" type="text" placeholder="e.g. Principal \u2013 Name" />
+        <label>Inspection Team</label>
+        <input id="ni-team" type="text" placeholder="e.g. QAW-Inspector \u2013 Name" />
+        <button class="primary big" onclick="startInspection()">Start Inspection</button>
+      </div>
+    </div>`;
+}
+function startInspection() {
+  const campus = document.getElementById("ni-campus").value;
+  const date = document.getElementById("ni-date").value;
+  const principal = document.getElementById("ni-principal").value || "(not entered)";
+  const team = document.getElementById("ni-team").value || "(not entered)";
+  state.inspection = { campus, date, principal, team, checkpoints: initInspectionData() };
+  setScreen("checklist");
+}
+
+/* ---- CHECKLIST (grouped by domain) ---- */
+function renderChecklist() {
+  if (!state.inspection) return setScreen("dashboard");
+  const insp = state.inspection;
+  const domainsHtml = DOMAINS.map(dom => {
+    const items = dom.items.map(([id]) => insp.checkpoints[id]);
+    const rows = items.map(cp => {
+      const pr = priorityOf(cp);
+      const prClass = pr ? pr.toLowerCase() : "";
+      return `
+        <div class="cp-row ${prClass}" onclick="openCheckpoint('${cp.id}')">
+          <div class="cp-id">${cp.id}</div>
+          <div class="cp-standard">${cp.standard}</div>
+          <div class="cp-rating">${cp.rating !== null && cp.rating !== undefined ? cp.rating : "\u2013"}</div>
+          ${pr === "CRITICAL" ? `<div class="cp-flag">\uD83D\uDD34</div>` : ""}
+        </div>`;
+    }).join("");
+    return `
+      <div class="domain-block">
+        <div class="domain-header">${dom.name}</div>
+        ${rows}
+      </div>`;
+  }).join("");
+
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar(insp.campus, "dashboard")}
+      <div class="content">
+        <div class="insp-meta">${insp.date} \u2022 ${insp.principal} \u2022 ${insp.team}</div>
+        ${domainsHtml}
+      </div>
+      <div class="bottombar">
+        <button class="secondary" onclick="setScreen('summary')">View Summary</button>
+        <button class="primary" onclick="setScreen('report')">Generate Report</button>
+      </div>
+    </div>`;
+}
+
+function openCheckpoint(id) {
+  state.activeCheckpoint = id;
+  setScreen("checkpoint");
+}
+
+/* ---- CHECKPOINT DETAIL ---- */
+function renderCheckpointDetail() {
+  const cp = state.inspection.checkpoints[state.activeCheckpoint];
+  const pr = priorityOf(cp);
+  const showCorrective = cp.rating !== null && cp.rating !== undefined && cp.rating <= 2;
+  const ratingButtons = [0,1,2,3,4].map(r => `
+    <button class="rate-btn ${cp.rating === r ? 'selected' : ''} r${r}" onclick="setRating('${cp.id}', ${r})">
+      ${r}<span class="rate-label">${RATING_LABELS[r]}</span>
+    </button>`).join("");
+
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar(cp.id, "checklist")}
+      <div class="content">
+        ${pr === "CRITICAL" ? `<div class="critical-banner">\uD83D\uDD34 CRITICAL \u2013 ACTION REQUIRED</div>` : ""}
+        <div class="cp-card">
+          <div class="cp-card-standard">${cp.standard}</div>
+          <div class="cp-card-meta">Weight: <b>${cp.weight}</b> &nbsp;|&nbsp; Critical: <b>${cp.critical ? "Yes" : "No"}</b></div>
+        </div>
+
+        <label>Rating</label>
+        <div class="rate-grid">${ratingButtons}</div>
+        <div class="score-preview">Weighted Score: <b>${weightedScore(cp)}</b> ${cp.rating !== null && cp.rating !== undefined ? `(${cp.weight} \u00d7 ${cp.rating} \u00f7 4)` : ""}</div>
+
+        <label>Observation / Finding</label>
+        <textarea id="cp-observation" rows="3" placeholder="e.g. The principal was unaware of academic material shared by Head Office.">${cp.observation}</textarea>
+
+        <label>Photo Evidence</label>
+        <div class="photo-row">
+          <label class="photobtn">Take Photo
+            <input type="file" accept="image/*" capture="environment" onchange="addPhoto('${cp.id}', this, 'photos')" hidden />
+          </label>
+          <label class="photobtn secondary">Choose from Gallery
+            <input type="file" accept="image/*" onchange="addPhoto('${cp.id}', this, 'photos')" hidden />
+          </label>
+        </div>
+        <div class="thumb-row">${cp.photos.map((src,i) => `<img src="${src}" class="thumb" onclick="removePhoto('${cp.id}','photos',${i})" />`).join("")}</div>
+
+        ${showCorrective ? `
+        <div class="corrective-block">
+          <div class="section-title">Corrective Action</div>
+          <label>Corrective Action</label>
+          <textarea id="cp-action" rows="2">${cp.action}</textarea>
+          <label>Responsible Department</label>
+          <input id="cp-dept" type="text" value="${cp.dept}" placeholder="e.g. Admin / HR/ Accounts" />
+          <label>Target Date</label>
+          <input id="cp-target" type="date" value="${cp.target}" />
+
+          <div class="section-title">Evidence Closure</div>
+          <div class="hint">Proof that the corrective action has actually been completed.</div>
+          <label>Closure Note</label>
+          <textarea id="cp-closure-note" rows="2">${cp.closureNote}</textarea>
+          <label>Closure Photo</label>
+          <div class="photo-row">
+            <label class="photobtn">Take Photo
+              <input type="file" accept="image/*" capture="environment" onchange="addPhoto('${cp.id}', this, 'closurePhotos')" hidden />
+            </label>
+            <label class="photobtn secondary">Choose from Gallery
+              <input type="file" accept="image/*" onchange="addPhoto('${cp.id}', this, 'closurePhotos')" hidden />
+            </label>
+          </div>
+          <div class="thumb-row">${cp.closurePhotos.map((src,i) => `<img src="${src}" class="thumb" onclick="removePhoto('${cp.id}','closurePhotos',${i})" />`).join("")}</div>
+          <label>Status</label>
+          <select id="cp-status">
+            ${["Open","In Progress","Closed"].map(s => `<option value="${s}" ${cp.closureStatus===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+        </div>` : ""}
+
+        <button class="primary big" onclick="saveCheckpoint('${cp.id}')">Save & Back to Checklist</button>
+      </div>
+    </div>`;
+}
+
+function setRating(id, r) {
+  state.inspection.checkpoints[id].rating = r;
+  render();
+}
+function addPhoto(id, inputEl, field) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.inspection.checkpoints[id][field].push(e.target.result);
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+function removePhoto(id, field, idx) {
+  state.inspection.checkpoints[id][field].splice(idx, 1);
+  render();
+}
+function saveCheckpoint(id) {
+  const cp = state.inspection.checkpoints[id];
+  cp.observation = document.getElementById("cp-observation").value;
+  const actionEl = document.getElementById("cp-action");
+  if (actionEl) {
+    cp.action = actionEl.value;
+    cp.dept = document.getElementById("cp-dept").value;
+    cp.target = document.getElementById("cp-target").value;
+    cp.closureNote = document.getElementById("cp-closure-note").value;
+    cp.closureStatus = document.getElementById("cp-status").value;
+  }
+  setScreen("checklist");
+}
+
+/* ---- SUMMARY ---- */
+function renderSummary() {
+  const insp = state.inspection;
+  const s = computeSummary(insp);
+  const statusClass = s.status.includes("CRITICAL") ? "critical" :
+                       s.status === "EXCELLENT" ? "excellent" :
+                       s.status === "GOOD" ? "good" :
+                       s.status === "NEEDS IMPROVEMENT" ? "warn" : "bad";
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar("Inspection Summary", "checklist")}
+      <div class="content">
+        <div class="summary-card">
+          <div class="summary-row"><span>Campus</span><b>${insp.campus}</b></div>
+          <div class="summary-row"><span>Inspection Date</span><b>${insp.date}</b></div>
+          <div class="summary-row"><span>Overall Score</span><b>${s.overall}%</b></div>
+          <div class="summary-row"><span>Overall Status</span><b class="status ${statusClass}">${s.status}</b></div>
+          <div class="summary-row"><span>Critical Observations</span><b>${s.critical}</b></div>
+          <div class="summary-row"><span>High Priority Observations</span><b>${s.high}</b></div>
+          <div class="summary-row"><span>Medium Priority Observations</span><b>${s.medium}</b></div>
+        </div>
+        <div class="section-title">Head-Wise Scores</div>
+        ${s.domainScores.map(d => `
+          <div class="domain-score-row">
+            <div class="ds-name">${d.name}</div>
+            <div class="ds-bar-track"><div class="ds-bar-fill" style="width:${Math.min(d.pct,100)}%"></div></div>
+            <div class="ds-pct">${d.pct}%</div>
+          </div>`).join("")}
+        <button class="primary big" onclick="setScreen('report')">Generate Report</button>
+      </div>
+    </div>`;
+}
+
+/* ---- HISTORY ---- */
+function renderHistory() {
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar("Inspection History", "dashboard")}
+      <div class="content">
+        <div class="demo-banner">DEMO DATA </div>
+        ${HISTORY_DEMO.map(h => `
+          <div class="history-row">
+            <div>
+              <div class="history-campus">${h.campus}</div>
+              <div class="history-date">${h.date}</div>
+            </div>
+            <div class="history-score">${h.score}%</div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+}
+
+/* ---- REPORT (printable) ---- */
+function renderReport() {
+  const insp = state.inspection;
+  if (!insp) return setScreen("dashboard");
+  const s = computeSummary(insp);
+  const allCps = Object.values(insp.checkpoints);
+  const criticalRows = allCps.filter(c => priorityOf(c) === "CRITICAL");
+  const otherObs = allCps.filter(c => c.rating !== null && c.rating < 4 && priorityOf(c) !== "CRITICAL");
+
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar("Inspection Report", "summary")}
+      <div class="content report">
+        <div class="report-header">
+          <div class="brand-badge small"> <img src="KIPS_logo.png" alt="KIPS Logo" style="width: 40px; height: auto;">
+          </div>
+          <div>
+            <div class="report-title">KIPS College \u2013 QAW Inspection Report</div>
+            <div class="demo-banner small">DEMO Version</div>
+          </div>
+        </div>
+        <table class="report-table">0
+          <tr><td>Campus</td><td>${insp.campus}</td></tr>
+          <tr><td>Date</td><td>${insp.date}</td></tr>
+          <tr><td>Principal</td><td>${insp.principal}</td></tr>
+          <tr><td>Inspection Team</td><td>${insp.team}</td></tr>
+          <tr><td>Overall Score</td><td><b>${s.overall}%</b></td></tr>
+          <tr><td>Overall Status</td><td><b>${s.status}</b></td></tr>
+        </table>
+
+        <div class="section-title">Domain Scores</div>
+        <table class="report-table">
+          ${s.domainScores.map(d => `<tr><td>${d.name}</td><td>${d.pct}%</td></tr>`).join("")}
+        </table>
+
+        <div class="section-title">Critical Observations (${criticalRows.length})</div>
+        ${criticalRows.length ? criticalRows.map(c => `
+          <div class="report-obs critical">
+            <b>${c.id}</b> \u2013 ${c.standard}<br/>
+            <i>${c.observation || "(no observation entered)"}</i><br/>
+            Corrective Action: ${c.action || "\u2013"} | Dept: ${c.dept || "\u2013"} | Target: ${c.target || "\u2013"}
+          </div>`).join("") : `<div class="hint">None recorded.</div>`}
+
+        <div class="section-title">Other Observations (rated below 4)</div>
+        ${otherObs.length ? otherObs.map(c => `
+          <div class="report-obs">
+            <b>${c.id}</b> \u2013 ${c.standard}<br/>
+            <i>${c.observation || "(no observation entered)"}</i>
+          </div>`).join("") : `<div class="hint">None recorded.</div>`}
+
+        <button class="primary big no-print" onclick="window.print()">Save / Print as PDF</button>
+        <div class="hint no-print">Uses your browser's built-in print dialog \u2192 "Save as PDF". No internet or extra app required.</div>
+      </div>
+    </div>`;
+}
+
+/* boot */
+render();
+
+</script>
+</body>
+</html>
