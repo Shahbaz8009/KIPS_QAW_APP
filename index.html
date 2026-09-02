@@ -154,6 +154,60 @@
   .report-obs { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; line-height: 1.4; }
   .report-obs.critical { background: var(--red-bg); border-color: var(--red); }
 
+  /* ---- Searchable Campus ---- */
+.campus-search-wrap {
+  position: relative;
+}
+
+#campus-search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  background: #fff;
+  font-family: inherit;
+}
+
+.campus-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  z-index: 50;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  display: none;
+}
+
+.campus-result {
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.campus-result:hover {
+  background: var(--light-blue);
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.campus-result:last-child {
+  border-bottom: none;
+}
+
+.no-campus-result {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--grey);
+  text-align: center;
+}
   @media print {
     .topbar, .bottombar, .no-print { display: none !important; }
     body { max-width: 100%; }
@@ -170,8 +224,211 @@
    by design, so the file is safe to preview anywhere).
    ============================================================ */
 
-const CAMPUSES = ["LHR BC1 (AMEER CHOWK)", "LHR GC2 (GARDEN TOWN)", "FSD BC2 (D GROUND)", "ISB GC1 (G-9)", "RWP BC1 (6TH ROAD)"];
-
+/*const CAMPUSES = ["LHR BC1 (AMEER CHOWK)", "LHR GC2 (GARDEN TOWN)", "FSD BC2 (D GROUND)", "ISB GC1 (G-9)", "RWP BC1 (6TH ROAD)"];*/
+const CAMPUSES = [
+  "ATK BC1 (ATTOCK BOYS)",
+  "ATK GC1 (ATTOCK GIRLS)",
+  "BKR BC1 (BHAKAR BOYS)",
+  "BKR GC1 (BHAKAR GIRLS)",
+  "BNG BC1 (Bahawalnagar Boys)",
+  "BNG GC1 (Bahawalnagar Girls)",
+  "BRN BC1 (Barnala BOYS Campus)",
+  "BRN GC1 (Barnala GIRLS Campus)",
+  "BRW BC1 (Burewala Boys)",
+  "BRW GC1 (Burewala Girls)",
+  "BWP BC1 (Bahawalpur Boys)",
+  "BWP GC1 (Bahawalpur Girls)",
+  "CKJ BC1 (CHAK JHUMRA BOYS)",
+  "CKJ GC1 (CHAK JHUMRA GIRLS)",
+  "CT BC1 (Chiniot Boys)",
+  "CT GC1 (Chiniot Girls)",
+  "CTN BC1 (Chishtian Boys)",
+  "CTN GC1 (Chishtian Girls)",
+  "CWL BC1 (Chakwal BOYS Campus)",
+  "CWL GC1 (Chakwal GIRLS Campus)",
+  "CWT BC1 (Chichawatani Boys)",
+  "CWT GC1 (Chichawatani Girls)",
+  "DHL BC1 (Dhudhial Boys)",
+  "DHL GC1 (Dhudhial Girls)",
+  "DKT BC1 (DOKOTA)",
+  "DKT GC1 (DOKOTA)",
+  "DSK BC1 (Daska Boys)",
+  "DSK GC1 (Daska Girls)",
+  "FSD BC1 (Jail Road Boys)",
+  "FSD BC2 (D-Ground Boys)",
+  "FSD BC3 (Sargodha Road Boys)",
+  "FSD BC4 (Eden Garden Boys Campus)",
+  "FSD GC1 (Jail Road Girls)",
+  "FSD GC2 (D-Ground Girls)",
+  "FSD GC3 (Sargodha Road Girls)",
+  "FSD GC4 (Eden Garden Girls Campus)",
+  "FTJ BC1 (Fateh Jhang Boys)",
+  "FTJ GC1 (Fateh Jhang Girls)",
+  "GJK BC1 (Gujar Khan Boys)",
+  "GJK GC1 (Gujar Khan Girls)",
+  "GJR BC1 (Gojra Boys)",
+  "GJR GC1 (Gojra Girls)",
+  "GJT BC1 (Gujrat Boys)",
+  "GJT GC1 (Gujrat Girls)",
+  "GLT BC1 (Gilgit Boys)",
+  "GLT GC1 (Gilgit Girls)",
+  "GRW BC1 (SHAHEENABAD B)",
+  "GRW BC2 (SKT BYPASS)",
+  "GRW BC5 (KANGNIWALA)",
+  "GRW GC1 (DC COLONY)",
+  "GRW GC2 (Satellite Town Girls)",
+  "GRW GC3 (SHAHEENABAD G)",
+  "GRW GC4 (SKT BYPASS)",
+  "GRW GC5 (KANGNIWALA)",
+  "HFD BC1 (Hafizabad Boys)",
+  "HFD GC1 (Hafizabad Girls)",
+  "HND BC1 (Haroonabad Boys)",
+  "HND GC1 (Haroonabad Girls)",
+  "HSP BC1 (Hasilpur Boys)",
+  "HSP GC1 (Hasilpur Girls)",
+  "ISB BC1 (G9 Boys)",
+  "ISB BC2 (KHANNA PUL BOYS)",
+  "ISB BC4 (Barakahu Boys)",
+  "ISB GC1 (G9 Girls)",
+  "ISB GC2 (KHANNA PUL GIRLS)",
+  "ISB GC3 (PWD GIRLS)",
+  "ISB GC4 (Barakahu Girls)",
+  "JHG BC1 (Jhang Boys)",
+  "JHG GC1 (Jhang Girls)",
+  "JHN BC1 (Jahanian Boys)",
+  "JHN GC1 (Jahanian Girls)",
+  "JPR BC1 (Jampur Boys)",
+  "JPR GC1 (Jampur Girls)",
+  "KBW BC1 (Kabirwala Boys)",
+  "KBW GC1 (Kabirwala Girls)",
+  "KDK BC1 (KHUDDIAN KHAS BOYS)",
+  "KDK GC1 (KHUDDIAN KHAS GIRLS)",
+  "KHN BC1 (Kahna Boys)",
+  "KHN GC1 (Kahna Girls)",
+  "KHP BC1 (Kahror Pakka Boys)",
+  "KHP GC1 (Kahror Pakka Girls)",
+  "KHR BC1 (Kharian Boys)",
+  "KHR GC1 (Kharian Girls)",
+  "KMK BC1 (Kamoki BOYS Campus)",
+  "KMK GC1 (Kamoki GIRLS Campus)",
+  "KNP BC1 (Khanpur Boys)",
+  "KNP GC1 (Khanpur Girls)",
+  "KSD BC1 (KALLAR SYEDAN BOYS)",
+  "KSD GC1 (KALLAR SYEDAN GIRLS)",
+  "KSR BC1 (Kasur Boys)",
+  "KSR GC1 (Kasur Girls)",
+  "KTD BC1 (Kot Addu Boys)",
+  "KTD GC1 (Kot Addu Girls)",
+  "KTI BC1 (Kotli AJK Boys)",
+  "KTI GC1 (Kotli AJK Girls)",
+  "KTL BC1 (Kotla Boys)",
+  "KTL GC1 (Kotla Girls)",
+  "KWL BC1 (Khanewal Boys)",
+  "KWL GC1 (Khanewal Girls)",
+  "LHR BC1 (Ameer Chowk Boys)",
+  "LHR BC10 (Abdalian Boys)",
+  "LHR BC11 (Shahdara Boys)",
+  "LHR BC2 (Garden Town Boys)",
+  "LHR BC3 (Bahria Boys)",
+  "LHR BC4 (Johar Town Boys)",
+  "LHR BC5 (Thokar Boys)",
+  "LHR BC6 (Ferozepur Road Boys)",
+  "LHR BC7 (Multan Road Lahore Boys)",
+  "LHR BC8 (Manawan Lahore Boys)",
+  "LHR BC9 (Defence Road Lahore Boys)",
+  "LHR GC1 205 (Johar Town Girls 205)",
+  "LHR GC1 207 (Johar Town Girls 207)",
+  "LHR GC10 (Abdalian Girls)",
+  "LHR GC11 (Shahdara Girls)",
+  "LHR GC2 (Garden Town Girls)",
+  "LHR GC3 (Gulberg Girls)",
+  "LHR GC4 (Bahria Girls)",
+  "LHR GC5 (Thokar Girls)",
+  "LHR GC6 (Ferozepur Road Girls)",
+  "LHR GC7 (Multan Road Lahore Girls)",
+  "LHR GC8 (Manawan Lahore Girls)",
+  "LHR GC9 (Defence Road Lahore Girls)",
+  "LYH BC1 (Layyah Boys)",
+  "LYH GC1 (Layyah Girls)",
+  "MCH BC1 (Minchinabad Boys)",
+  "MCH GC1 (Minchinabad Girls)",
+  "MCN BC1 (Mian Channu Boys)",
+  "MCN GC1 (Mian Channu Girls)",
+  "MDL BC1 (Mandiala Boys)",
+  "MDL GC1 (Mandiala Girls)",
+  "MDN BC1 (Mardan Boys)",
+  "MDN GC1 (Mardan Girls)",
+  "MLK BC1 (Malikwal Boys)",
+  "MLK GC1 (Malikwal Girls)",
+  "MLS BC1 (Mailsi BOYS)",
+  "MLS GC1 (Mailsi GIRLS)",
+  "MNW BC1 (Mianwali Boys)",
+  "MNW GC1 (Mianwali Girls)",
+  "MRP BC1 (Mirpur Boys)",
+  "MRP GC1 (Mirpur Girls)",
+  "MTN BC1 (Bosan Road Boys)",
+  "MTN BC2 (BZU Boys)",
+  "MTN BC3 (Northern Bypass Boys)",
+  "MTN GC1 (Shamsabad Girls)",
+  "MTN GC2 (Sabzazar Girls)",
+  "MTN GC3 (Northern Bypass Girls)",
+  "NVK BC1 (Nowshera Virkan Boys)",
+  "NVK GC1 (Nowshera Virkan Girls)",
+  "NWL BC1 (Narowal Boys)",
+  "NWL GC1 (Narowal Girls)",
+  "OKR BC1 (Okara Boys)",
+  "OKR GC1 (Okara Girls)",
+  "PHL BC1 (Phalia BOYS Campus)",
+  "PHL GC1 (Phalia GIRLS Campus)",
+  "PSR BC1 (PASRUR BOYS)",
+  "PSR GC1 (PASRUR GIRLS)",
+  "PTK BC1 (Pattoki Boys)",
+  "PTK GC1 (Pattoki Girls)",
+  "QDS BC1 (Qila Didar Singh BOYS Campus)",
+  "QDS GC1 (Qila Didar Singh GIRLS Campus)",
+  "RWD BC1 (Raiwind Boys)",
+  "RWD GC1 (Raiwind Girls)",
+  "RWP BC1 (6th Road Boys)",
+  "RWP BC3 (ADYALA ROAD BOYS)",
+  "RWP GC1 (Chandni Chowk Girls)",
+  "RWP GC2 (Saddar Girls)",
+  "RWP GC3 (ADYALA ROAD GIRLS)",
+  "RYK BC1 (RYK Boys)",
+  "RYK GC1 (RYK Girls)",
+  "SDQ BC1 (Sadiqabad Boys)",
+  "SDQ GC1 (Sadiqabad Girls)",
+  "SGD BC1 (Sargodha Boys Campus)",
+  "SGD GC1 (Sargodha Girls Campus)",
+  "SHL BC1 (Sangla Boys)",
+  "SHL GC1 (Sangla Girls)",
+  "SKK BC1 (Sukheke Boys)",
+  "SKK GC1 (Sukheke Girls)",
+  "SKP BC1 (SHEIKHUPURA)",
+  "SKP BC2 (32 CHOWK SHEIKHUPURA)",
+  "SKP GC1 (SHEIKHUPURA)",
+  "SKP GC2 (32 CHOWK SHEIKHUPURA)",
+  "SKT BC1 (Rangers Road Boys)",
+  "SKT BC2 (Shahabpura Boys)",
+  "SKT BC3 (DASKA ROAD BOYS)",
+  "SKT GC1 (Rangers Road Girls)",
+  "SKT GC2 (Shahabpura Girls)",
+  "SKT GC3 (DASKA ROAD GIRLS)",
+  "SMB BC1 (Sambrial BOYS Campus)",
+  "SMB GC1 (Sambrial GIRLS Campus)",
+  "SMD BC1 (Samundri Boys)",
+  "SMD GC1 (Samundri Girls)",
+  "TLG BC1 (Talagang Boys)",
+  "TLG GC1 (Talagang Girls)",
+  "Trial campus (Trial for all)",
+  "Trial Franchise (Trial for DEMO)",
+  "VHR BC1 (Vehari Boys)",
+  "VHR GC1 (Vehari Girls)",
+  "WAH GC2 (WAH Cantt Girls Campus)",
+  "WCT BC1 (Wah Cantt Boys)",
+  "WCT GC1 (Wah Cantt Girls)",
+  "ZWL BC1 (Zafarwal Boys)",
+  "ZWL GC1 (Zafarwal Girls)"
+];
 const RATING_LABELS = {
   0: "Non-Compliant",
   1: "Major Gap",
@@ -449,6 +706,145 @@ function renderDashboard() {
 
 /* ---- NEW INSPECTION ---- */
 function renderNewInspection() {
+  // Get today's date in local time as YYYY-MM-DD
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  const currentDate = `${year}-${month}-${day}`;
+
+  root.innerHTML = `
+    <div class="app-shell">
+      ${topBar("New Inspection", "dashboard")}
+
+      <div class="content">
+
+        <label>Campus</label>
+
+        <div class="campus-search-wrap">
+          <input
+            id="campus-search"
+            type="text"
+            placeholder="Search by campus code or campus name..."
+            autocomplete="off"
+            oninput="searchCampus()"
+            onclick="showCampusResults()"
+          />
+
+          <div id="campus-results" class="campus-results"></div>
+
+          <input type="hidden" id="ni-campus" value="${CAMPUSES[0] || ""}" />
+        </div>
+
+        <label>Inspection Date</label>
+        <input
+          id="ni-date"
+          type="date"
+          value="${currentDate}"
+        />
+
+        <label>Principal Name</label>
+        <input
+          id="ni-principal"
+          type="text"
+          placeholder="e.g. Principal – Name"
+        />
+
+        <label>Inspection Team</label>
+        <input
+          id="ni-team"
+          type="text"
+          placeholder="e.g. QAW-Inspector – Name"
+        />
+
+        <button class="primary big" onclick="startInspection()">
+          Start Inspection
+        </button>
+
+      </div>
+    </div>`;
+
+  // Initially show all campuses
+  showCampusResults();
+
+  // Close campus list when clicking outside
+  document.addEventListener("click", closeCampusResults);
+}
+
+function searchCampus() {
+  const searchInput = document.getElementById("campus-search");
+  const resultsBox = document.getElementById("campus-results");
+
+  if (!searchInput || !resultsBox) return;
+
+  const keyword = searchInput.value.trim().toLowerCase();
+
+  const matches = CAMPUSES.filter(campus =>
+    campus.toLowerCase().includes(keyword)
+  );
+
+  resultsBox.innerHTML = "";
+
+  if (matches.length === 0) {
+    resultsBox.innerHTML = `
+      <div class="no-campus-result">
+        No campus found
+      </div>`;
+    resultsBox.style.display = "block";
+    return;
+  }
+
+  matches.forEach(campus => {
+    const item = document.createElement("div");
+    item.className = "campus-result";
+    item.textContent = campus;
+
+    item.onclick = function(event) {
+      event.stopPropagation();
+      selectCampus(campus);
+    };
+
+    resultsBox.appendChild(item);
+  });
+
+  resultsBox.style.display = "block";
+}
+
+function showCampusResults() {
+  searchCampus();
+}
+
+function selectCampus(campus) {
+  const searchInput = document.getElementById("campus-search");
+  const hiddenInput = document.getElementById("ni-campus");
+  const resultsBox = document.getElementById("campus-results");
+
+  if (searchInput) {
+    searchInput.value = campus;
+  }
+
+  if (hiddenInput) {
+    hiddenInput.value = campus;
+  }
+
+  if (resultsBox) {
+    resultsBox.style.display = "none";
+  }
+}
+
+function closeCampusResults(event) {
+  const wrapper = document.querySelector(".campus-search-wrap");
+
+  if (wrapper && !wrapper.contains(event.target)) {
+    const resultsBox = document.getElementById("campus-results");
+
+    if (resultsBox) {
+      resultsBox.style.display = "none";
+    }
+  }
+}
+
+/*function renderNewInspection() {
   root.innerHTML = `
     <div class="app-shell">
       ${topBar("New Inspection", "dashboard")}
@@ -464,7 +860,7 @@ function renderNewInspection() {
         <button class="primary big" onclick="startInspection()">Start Inspection</button>
       </div>
     </div>`;
-}
+}*/
 function startInspection() {
   const campus = document.getElementById("ni-campus").value;
   const date = document.getElementById("ni-date").value;
